@@ -1,0 +1,29 @@
+{
+    "name": "cloudwelder/petitions-api",
+    "description": "This package provides a wrapper for Petitions.io REST Api",
+    "keywords": ["php", "petitions", "api"],
+    "license": "MIT",
+    "authors": [
+	{
+            "name": "Alwin Tom",
+            "email": "sr.verve.alwin@gmail.com"
+        },
+        {
+            "name": "Reneesh Tk",
+            "email": "sr.verve.reneesh@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5",
+	"guzzlehttp/guzzle": "~6.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "CloudWelder\\PetitionsApi\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
