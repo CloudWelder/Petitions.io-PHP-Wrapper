@@ -10,7 +10,8 @@ class PetitionsApi
     /**
      * Basic api url
      */
-    const API_ROOT = 'http://api.petitions.io/';
+    const API_ROOT = 'http://api.petitions.io/api';
+    const OAUTH_SERVER = 'http://petitions.io';
     
     
     const METHOD_GET = 'GET';
@@ -144,7 +145,7 @@ class PetitionsApi
             'scope' => '',
         ]);
         
-        return self::API_ROOT . "/oauth/authorize?" . $query;
+        return self::OAUTH_SERVER . "/oauth/authorize?" . $query;
     }
     
     /**
@@ -168,7 +169,7 @@ class PetitionsApi
         
         $http = new GuzzleClient;
         
-        $response = $http->post(self::API_ROOT . '/oauth/token', [
+        $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'client_id' => $this->clientId,
@@ -203,7 +204,7 @@ class PetitionsApi
     public function getTokenFromRefreshToken($refreshToken) {
         $http = new GuzzleHttp\Client;
         
-        $response = $http->post('http://your-app.com/oauth/token', [
+        $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
             'form_params' => [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $refreshToken,
