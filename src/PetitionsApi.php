@@ -4,6 +4,7 @@ namespace CloudWelder\PetitionsApi;
 use GuzzleHttp\Client as GuzzleClient;
 use CloudWelder\PetitionsApi\Exceptions\RestException;
 use CloudWelder\PetitionsApi\Exceptions\InvalidApiCredentialsException;
+use CloudWelder\PetitionsApi\Exceptions\OAuthException;
 use GuzzleHttp;
 use GuzzleHttp\Exception\ClientException;
 
