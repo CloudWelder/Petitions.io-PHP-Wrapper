@@ -1,5 +1,5 @@
 <?php
-namespace Cloudwelder\PetitionsApi\Exceptions;
+namespace CloudWelder\PetitionsApi\Exceptions;
 
 class InvalidApiCredentialsException extends PetitionsApiException
 {

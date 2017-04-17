@@ -1,5 +1,5 @@
 <?php
-namespace Cloudwelder\PetitionsApi;
+namespace CloudWelder\PetitionsApi;
 
 class Token {
     

@@ -1,17 +1,19 @@
 <?php
-namespace Cloudwelder\PetitionsApi;
+namespace CloudWelder\PetitionsApi;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Cloudwelder\PetitionsApi\Exceptions\ServerException;
-use Cloudwelder\PetitionsApi\Exceptions\InvalidApiCredentialsException;
+use CloudWelder\PetitionsApi\Exceptions\RestException;
+use CloudWelder\PetitionsApi\Exceptions\InvalidApiCredentialsException;
+use GuzzleHttp;
+use GuzzleHttp\Exception\ClientException;
 
 class PetitionsApi
 {
     /**
      * Basic api url
      */
-    const API_ROOT = 'http://api.petitions.io/api';
-    const OAUTH_SERVER = 'http://petitions.io';
+    const API_ROOT = 'http://api.petitions.io/api/';
+    const OAUTH_SERVER = 'http://oauth.petitions.io';
     
     
     const METHOD_GET = 'GET';
@@ -39,12 +41,19 @@ class PetitionsApi
     
     /**
      * 
+     * @string Url to redirect to
+     */
+    protected $redirectUri;
+    
+    /**
+     * 
      * @param string $clientId Your petitions.io API client id
      * @param string $clientSecret Your petitions.io API client secret
      */
-    public function __construct($clientId, $clientSecret) {
+    public function __construct($clientId, $clientSecret, $redirectUri) {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
+        $this->redirectUri = $redirectUri;
     }
     
     /**
@@ -55,7 +64,7 @@ class PetitionsApi
      * @param array $data Any query parameters
      *
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws RestException
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
@@ -71,7 +80,7 @@ class PetitionsApi
      * @param array $data Any data to be sent as JSON body
      *
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws RestException
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
@@ -87,7 +96,7 @@ class PetitionsApi
      * @param array $data Any data to be sent as JSON body
      *
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws RestException
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
@@ -102,7 +111,7 @@ class PetitionsApi
      * @param string $url API endpoint (relative)
      *
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws RestException
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
@@ -154,7 +163,7 @@ class PetitionsApi
      * @param string $authCode Authorization code from petitions.io 
      * 
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws OAuthException
      * 
      * @return \Cloudwelder\PetitionsApi\Token
      */
@@ -168,15 +177,24 @@ class PetitionsApi
         }
         
         $http = new GuzzleClient;
+        try {
+            $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $this->clientId,
+                    'client_secret' => $this->clientSecret,
+                    'redirect_uri' => $this->redirectUri,
+                    'code' => $authCode,
+                ],
+            ]);
+        } catch (GuzzleHttp\Exception\ServerException $e) {
+            $resp = $e->getResponse();
+            throw new OAuthException('oAuth Server Error', $resp, $resp->getStatusCode());
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            $resp = $e->getResponse();
+            throw new OAuthException('oAuth Server Error', $resp, $resp->getStatusCode());
+        }
         
-        $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'code' => $code,
-            ],
-        ]);
         
         $petitionsResponse = new Response($response);
         
@@ -186,7 +204,7 @@ class PetitionsApi
             //Create a token object.
             $token = new Token($data['access_token'], $data['refresh_token'], $data['expiry_in']);
         } else {
-            throw new ServerException('Request Failed.', $petitionsResponse, $petitionsResponse->getStatusCode());
+            throw new OAuthException('Request Failed.', $response, $response->getStatusCode());
         }
         
         return $token;
@@ -197,7 +215,7 @@ class PetitionsApi
      * 
      * @param string $refreshToken Previously obtained refresh token.
      * 
-     * @throws ServerException
+     * @throws OAuthException
      * 
      * @return \Cloudwelder\PetitionsApi\Token
      */
@@ -222,7 +240,7 @@ class PetitionsApi
             //Create a token object.
             $newToken = new Token($data['access_token'], $data['refresh_token'], $data['expiry_in']);
         } else {
-            throw new ServerException('Request Failed.', $petitionsResponse, $petitionsResponse->getStatusCode());
+            throw new OAuthException('Request Failed.', $response, $response->getStatusCode());
         }
         
         return $newToken;
@@ -238,7 +256,7 @@ class PetitionsApi
      * @param array $data
      * 
      * @throws InvalidApiCredentialsException
-     * @throws ServerException
+     * @throws RestException
      * 
      * @return \Cloudwelder\PetitionsApi\Response
      */
@@ -252,7 +270,7 @@ class PetitionsApi
             throw new InvalidApiCredentialsException('Client Secret is missing');
         }        
         
-        if (! $this->accessToken || ! $this->accessToken == '') {
+        if (! $this->accessToken || $this->accessToken == '') {
             throw new InvalidApiCredentialsException('Access token missing/expired.');
         }
         
@@ -266,7 +284,7 @@ class PetitionsApi
         //Set up the auth headers.
         $requestOptions = [
             'headers'   =>  [
-                'Authorization' =>  $this->accessToken
+                'Authorization' =>  'Bearer ' . $this->accessToken
             ]
         ];
         
@@ -280,39 +298,50 @@ class PetitionsApi
             }
         }
         
-        
-        $response = $httpClient->request($method, $url, $requestOptions);
-        $petitionsResponse = new Response($response);
-        
+        try {
+            $response = $httpClient->request($method, $url, $requestOptions);
+            $petitionsResponse = new Response($response);
+            
+            $responseCode = $response->getStatusCode();
+            
+            if ($responseCode >= 200 && $responseCode <= 210) {
+                return $petitionsResponse;
+            }
+            
+            throw new RestException('Unknown error', $response, $responseCode);
+            
+        } catch (ClientException $e) {
+            $this->handleRestException($e);  
+        }
+    }
+    
+    private function handleRestException(ClientException $e) {
+        $response = $e->getResponse();
         $responseCode = $response->getStatusCode();
         
-        if ($responseCode >= 200 && $responseCode <= 210) {
-            return $petitionsResponse;
-        }
         
         switch ($responseCode) {
             case 400:
-                throw new ServerException('Bad Request', $petitionsResponse, $responseCode);
+                throw new RestException('Bad Request', $response, $responseCode);
                 break;
             case 401:
-                throw new ServerException('Unauthorized: Check your access token', $petitionsResponse, $responseCode);
+                throw new RestException('Unauthorized: Check your access token', $response, $responseCode);
                 break;
             case 403:
-                throw new ServerException('Forbidden: Missing permission', $petitionsResponse, $responseCode);
+                throw new RestException('Forbidden: Missing permission', $response, $responseCode);
                 break;
             case 404:
-                throw new ServerException('Not Found: Check your API endpoint url', $petitionsResponse, $responseCode);
+                throw new RestException('Not Found: Check your API endpoint url', $response, $responseCode);
                 break;
             case 409:
-                throw new ServerException('Not Allowed: The specified operation is not allowed at the moment', $petitionsResponse, $responseCode);
+                throw new RestException('Not Allowed: The specified operation is not allowed at the moment', $response, $responseCode);
                 break;
             case 422:
-                throw new ServerException('Unprocessable Entity: Make sure the required parameters present and are valid', $petitionsResponse, $responseCode);
+                throw new RestException('Unprocessable Entity: Make sure the required parameters present and are valid', $response, $responseCode);
                 break;
             default:
-                throw new ServerException('Request Failed.', $petitionsResponse, $responseCode);
+                throw new RestException('Request Failed.', $response, $responseCode);
                 break;
         }
-        
     }
 }

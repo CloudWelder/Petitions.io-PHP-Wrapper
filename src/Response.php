@@ -1,5 +1,5 @@
 <?php
-namespace Cloudwelder\PetitionsApi;
+namespace CloudWelder\PetitionsApi;
 
 use Psr\Http\Message\ResponseInterface;
 
@@ -26,7 +26,7 @@ class Response {
             return $data;
         }
         
-        $data = json_decode($this->guzzleResponse->getContents(), true);
+        $data = json_decode($this->guzzleResponse->getBody(), true);
         return $data;
     }    
 }
