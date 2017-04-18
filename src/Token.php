@@ -32,6 +32,6 @@ class Token {
     }    
     
     public function getRefreshToken() {
-        return $this->refreshTokenToken;
+        return $this->refreshToken;
     }
 }
