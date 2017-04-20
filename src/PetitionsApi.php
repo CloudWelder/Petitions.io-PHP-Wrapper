@@ -127,6 +127,8 @@ class PetitionsApi
      */
     public function withToken($token) {
         $this->accessToken = $token;
+        
+        return $this;
     }
     
     
@@ -139,7 +141,7 @@ class PetitionsApi
      * 
      * @return string
      */
-    public function getLoginUrl($redirectUri) {
+    public function getLoginUrl() {
         if (! $this->clientId || $this->clientId == '' ) {
             throw new InvalidApiCredentialsException('Client ID is missing');
         }
@@ -150,7 +152,7 @@ class PetitionsApi
         
         $query = http_build_query([
             'client_id' => $this->clientId,
-            'redirect_uri' => $redirectUri,
+            'redirect_uri' => $this->redirectUri,
             'response_type' => 'code',
             'scope' => '',
         ]);
