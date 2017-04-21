@@ -135,13 +135,13 @@ class PetitionsApi
     /**
      * Returns the URL users should be redirected to for them to login.
      * 
-     * @param string $redirectUri The url to redirect to after succesful login
+     * @param string[] An array of scopes you require
      * 
      * @throws InvalidApiCredentialsException
      * 
      * @return string
      */
-    public function getLoginUrl() {
+    public function getLoginUrl($scopes = []) {
         if (! $this->clientId || $this->clientId == '' ) {
             throw new InvalidApiCredentialsException('Client ID is missing');
         }
@@ -150,11 +150,17 @@ class PetitionsApi
             throw new InvalidApiCredentialsException('Client Secret is missing');
         }       
         
+        $scopeStr = '';
+        if (! empty($scopes)) {
+            $scopes = array_map(function($a) {return trim($a);}, $scopes);
+            $scopeStr = trim(implode(' ', $scopes));
+        }
+        
         $query = http_build_query([
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUri,
             'response_type' => 'code',
-            'scope' => '',
+            'scope' => $scopeStr
         ]);
         
         return self::OAUTH_SERVER . "/oauth/authorize?" . $query;
@@ -222,8 +228,14 @@ class PetitionsApi
      * 
      * @return \Cloudwelder\PetitionsApi\Token
      */
-    public function getTokenFromRefreshToken($refreshToken) {
+    public function getTokenFromRefreshToken($refreshToken, $scopes = []) {
         $http = new GuzzleHttp\Client;
+        
+        $scopeStr = '';
+        if (! empty($scopes)) {
+            $scopes = array_map(function($a) {return trim($a);}, $scopes);
+            $scopeStr = trim(implode(' ', $scopes));
+        }
         
         $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
             'form_params' => [
@@ -231,7 +243,7 @@ class PetitionsApi
                 'refresh_token' => $refreshToken,
                 'client_id' => $this->clientId,
                 'client_secret' => $this->clientSecret,
-                'scope' => '',
+                'scope' => $scopeStr,
             ],
         ]);
         
