@@ -14,8 +14,7 @@ class PetitionsApi
      * Basic api url
      */
     const API_ROOT = 'http://api.petitions.io/api/';
-    const OAUTH_SERVER = 'http://oauth.petitions.io';
-    
+    const OAUTH_SERVER = 'http://oauth.petitions.io';    
     
     const METHOD_GET = 'GET';
     const METHOD_POST = 'POST';
@@ -23,31 +22,31 @@ class PetitionsApi
     const METHOD_DELETE = 'DELETE';
     
     /**
-     * 
+     *
      * @var string Access token for a user
      */
     protected $accessToken;
     
     /**
-     * 
+     *
      * @var string The client id
      */
     protected $clientId;
     
     /**
-     * 
+     *
      * @string Client secret for the API
      */
     protected $clientSecret;
     
     /**
-     * 
+     *
      * @string Url to redirect to
      */
     protected $redirectUri;
     
     /**
-     * 
+     *
      * @param string $clientId Your petitions.io API client id
      * @param string $clientSecret Your petitions.io API client secret
      */
@@ -69,7 +68,7 @@ class PetitionsApi
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
-    public function get($url, $data) {
+    public function get($url, $data = []) {
         return $this->makeRequest($url, self::METHOD_GET, $data);
     }
     
@@ -85,7 +84,7 @@ class PetitionsApi
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
-    public function post($url, $data) {
+    public function post($url, $data = []) {
         return $this->makeRequest($url, self::METHOD_POST, $data);
     }
     
@@ -101,7 +100,7 @@ class PetitionsApi
      *
      * @return \Cloudwelder\PetitionsApi\Response
      */
-    public function put($url, $data) {
+    public function put($url, $data = []) {
         return $this->makeRequest($url, self::METHOD_PUT, $data);
     }
     
@@ -119,10 +118,10 @@ class PetitionsApi
     public function delete($url) {
         return $this->makeRequest($url, self::METHOD_DELETE);
     }
-        
+    
     /**
      * Set the access token to be used for any further API requests.
-     * 
+     *
      * @param string $token
      */
     public function withToken($token) {
@@ -134,11 +133,11 @@ class PetitionsApi
     
     /**
      * Returns the URL users should be redirected to for them to login.
-     * 
+     *
      * @param string[] An array of scopes you require
-     * 
+     *
      * @throws InvalidApiCredentialsException
-     * 
+     *
      * @return string
      */
     public function getLoginUrl($scopes = []) {
@@ -148,7 +147,7 @@ class PetitionsApi
         
         if (! $this->clientSecret || $this->clientSecret == '') {
             throw new InvalidApiCredentialsException('Client Secret is missing');
-        }       
+        }
         
         $scopeStr = '';
         if (! empty($scopes)) {
@@ -168,12 +167,12 @@ class PetitionsApi
     
     /**
      * Retrieve/generate token from authorization code.
-     * 
-     * @param string $authCode Authorization code from petitions.io 
-     * 
+     *
+     * @param string $authCode Authorization code from petitions.io
+     *
      * @throws InvalidApiCredentialsException
      * @throws OAuthException
-     * 
+     *
      * @return \Cloudwelder\PetitionsApi\Token
      */
     public function getTokenFromAuthCode($authCode) {
@@ -221,11 +220,11 @@ class PetitionsApi
     
     /**
      * Refresh/re-generate token from refres token
-     * 
+     *
      * @param string $refreshToken Previously obtained refresh token.
-     * 
+     *
      * @throws OAuthException
-     * 
+     *
      * @return \Cloudwelder\PetitionsApi\Token
      */
     public function getTokenFromRefreshToken($refreshToken, $scopes = []) {
@@ -263,19 +262,19 @@ class PetitionsApi
     
     
     /**
-     * 
+     *
      * Make an API call.
-     * 
+     *
      * @param string $url
      * @param string $method
      * @param array $data
-     * 
+     *
      * @throws InvalidApiCredentialsException
      * @throws RestException
-     * 
+     *
      * @return \Cloudwelder\PetitionsApi\Response
      */
-    private function makeRequest($url, $method = self::METHOD_GET, $data = []) {        
+    private function makeRequest($url, $method = self::METHOD_GET, $data = []) {
         //Make sure the API credentials are present.
         if (! $this->clientId || $this->clientId == '' ) {
             throw new InvalidApiCredentialsException('Client ID is missing');
@@ -283,7 +282,7 @@ class PetitionsApi
         
         if (! $this->clientSecret || $this->clientSecret == '') {
             throw new InvalidApiCredentialsException('Client Secret is missing');
-        }        
+        }
         
         if (! $this->accessToken || $this->accessToken == '') {
             throw new InvalidApiCredentialsException('Access token missing/expired.');
@@ -326,14 +325,13 @@ class PetitionsApi
             throw new RestException('Unknown error', $response, $responseCode);
             
         } catch (ClientException $e) {
-            $this->handleRestException($e);  
+            $this->handleRestException($e);
         }
     }
     
     private function handleRestException(ClientException $e) {
         $response = $e->getResponse();
         $responseCode = $response->getStatusCode();
-        
         
         switch ($responseCode) {
             case 400:

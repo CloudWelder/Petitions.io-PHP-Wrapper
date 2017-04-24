@@ -4,9 +4,9 @@ namespace CloudWelder\PetitionsApi;
 use Psr\Http\Message\ResponseInterface;
 
 class Response {
-      
+    
     /**
-     * 
+     *
      * @var ResponseInterface dsfsdfsdf
      */
     private $guzzleResponse;
@@ -14,7 +14,7 @@ class Response {
     private $data;
     
     public function __construct(ResponseInterface $guzzleResponse) {
-        $this->guzzleResponse = $guzzleResponse; 
+        $this->guzzleResponse = $guzzleResponse;
     }
     
     public function getStatusCode() {
@@ -22,11 +22,11 @@ class Response {
     }
     
     public function getResponseData() {
-        if ($data) {
-            return $data;
+        if ($this->data) {
+            return $this->data;
         }
         
-        $data = json_decode($this->guzzleResponse->getBody(), true);
-        return $data;
-    }    
+        $this->data = json_decode($this->guzzleResponse->getBody(), true);
+        return $this->data;
+    }
 }
