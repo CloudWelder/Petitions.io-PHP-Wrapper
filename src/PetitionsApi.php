@@ -21,6 +21,8 @@ class PetitionsApi
     const METHOD_PUT = 'PUT';
     const METHOD_DELETE = 'DELETE';
     
+    const GRANT_AUTHCODE = 'authorization_code';
+    const GRANT_PASSWORD = 'password';
     /**
      *
      * @var string Access token for a user
@@ -188,11 +190,74 @@ class PetitionsApi
         try {
             $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
                 'form_params' => [
-                    'grant_type' => 'authorization_code',
+                    'grant_type' => self::GRANT_AUTHCODE,
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
                     'redirect_uri' => $this->redirectUri,
                     'code' => $authCode,
+                ],
+            ]);
+        } catch (GuzzleHttp\Exception\ServerException $e) {
+            $resp = $e->getResponse();
+            throw new OAuthException('oAuth Server Error', $resp, $resp->getStatusCode());
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            $resp = $e->getResponse();
+            throw new OAuthException('oAuth Server Error', $resp, $resp->getStatusCode());
+        }
+        
+        
+        $petitionsResponse = new Response($response);
+        
+        if ($petitionsResponse->getStatusCode() == 200) {
+            $data = $petitionsResponse->getResponseData();
+            
+            //Create a token object.
+            $token = new Token($data['access_token'], $data['refresh_token'], $data['expiry_in']);
+        } else {
+            throw new OAuthException('Request Failed.', $response, $response->getStatusCode());
+        }
+        
+        return $token;
+    }
+    
+    
+    /**
+     * Get access token in exchange for provding username and password.
+     * 
+     * @param string $username Username
+     * @param string $password Password
+     * @param array  $scopes Scopes
+     * 
+     * @throws InvalidApiCredentialsException
+     * @throws OAuthException
+     *
+     * @return \Cloudwelder\PetitionsApi\Token
+     */
+    public function getTokenFromCredentials($username, $password, $scopes = []) {
+        if (! $this->clientId || $this->clientId == '' ) {
+            throw new InvalidApiCredentialsException('Client ID is missing');
+        }
+        
+        if (! $this->clientSecret || $this->clientSecret == '') {
+            throw new InvalidApiCredentialsException('Client Secret is missing');
+        }
+        
+        $scopeStr = '';
+        if (! empty($scopes)) {
+            $scopes = array_map(function($a) {return trim($a);}, $scopes);
+            $scopeStr = trim(implode(' ', $scopes));
+        }
+        
+        $http = new GuzzleClient;
+        try {
+            $response = $http->post(self::OAUTH_SERVER . '/oauth/token', [
+                'form_params' => [
+                    'grant_type' => self::GRANT_PASSWORD,
+                    'client_id' => $this->clientId,
+                    'client_secret' => $this->clientSecret,
+                    'username' => $username,
+                    'password' => $password,
+                    'scope' =>  $scopeStr
                 ],
             ]);
         } catch (GuzzleHttp\Exception\ServerException $e) {
