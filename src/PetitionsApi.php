@@ -14,7 +14,7 @@ class PetitionsApi
      * Basic api url
      */
     const API_ROOT = 'http://api.petitions.io/api/';
-    const OAUTH_SERVER = 'http://oauth.petitions.io';    
+    const OAUTH_SERVER = 'http://oapp.petitions.io/';    
     
     const METHOD_GET = 'GET';
     const METHOD_POST = 'POST';
