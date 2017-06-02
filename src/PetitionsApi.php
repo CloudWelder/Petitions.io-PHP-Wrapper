@@ -51,8 +51,22 @@ class PetitionsApi
      *
      * @param string $clientId Your petitions.io API client id
      * @param string $clientSecret Your petitions.io API client secret
+     * @param string $redirectUri Redirect URI registered with petitions.io
      */
-    public function __construct($clientId, $clientSecret, $redirectUri) {
+    public function __construct($clientId = null, $clientSecret = null, $redirectUri = null) {
+        $this->clientId = $clientId;
+        $this->clientSecret = $clientSecret;
+        $this->redirectUri = $redirectUri;
+    }
+    
+    /**
+     * Set client credntials
+     * 
+     * @param string $clientId Your petitions.io API client id
+     * @param string $clientSecret Your petitions.io API client secret
+     * @param string $redirectUri Redirect URI registered with petitions.io
+     */
+    public function setClientCredentials($clientId, $clientSecret, $redirectUri) {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
@@ -340,21 +354,11 @@ class PetitionsApi
      * @return \Cloudwelder\PetitionsApi\Response
      */
     private function makeRequest($url, $method = self::METHOD_GET, $data = []) {
-        //Make sure the API credentials are present.
-        if (! $this->clientId || $this->clientId == '' ) {
-            throw new InvalidApiCredentialsException('Client ID is missing');
-        }
-        
-        if (! $this->clientSecret || $this->clientSecret == '') {
-            throw new InvalidApiCredentialsException('Client Secret is missing');
-        }
-        
         if (! $this->accessToken || $this->accessToken == '') {
             throw new InvalidApiCredentialsException('Access token missing/expired.');
         }
         
-        //Create a guzzle request.
-        
+        //Create a guzzle request.        
         $httpClient = new GuzzleClient([
             'base_uri'  =>  self::API_ROOT,
             
