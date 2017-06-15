@@ -1,0 +1,10 @@
+{
+    "name": "actright/sapmple-app",
+    "description": "Sample Application for reference",
+    "type": "project",
+    "require": {
+        "cloudwelder/petitions-api": ">0.1.3"
+    },
+    "license": "MIT",
+    "minimum-stability": "dev"
+}
