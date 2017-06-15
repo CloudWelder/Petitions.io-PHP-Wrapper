@@ -315,8 +315,12 @@ $(document).ready(function(){
             type: "POST",
             data: postData,
             success: function(data, textStatus, jqXHR) {
-                alert(data);
-                $('#myModal').modal('hide');
+                if(data=='Success'){
+                    alert('Target Created');
+                    $('#myModal').modal('hide');
+                }else {
+					alert(data);
+                }
             },
             error: function(jqXHR, status, error) {
                 console.log(status + ": " + error);
