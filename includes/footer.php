@@ -74,14 +74,36 @@ $(document).ready(function(){
         source:  "search_target.php",
         minLength: 2,
         focus: function( event, ui ) {
-            $( "#petition_target" ).val( ui.item.label );
-            return false;
-        },
-        select: function( event, ui ) {
+		    if (ui.item==null)
+	        {
+		        $("#petition_target").val('');
+		        $("#petition_target").focus();
+		        $("#petition_target_id").val('');
+	        }
             $( "#petition_target" ).val( ui.item.label );
             $("#petition_target_id").val(ui.item.value);
             return false;
-    }
+        },
+        select: function( event, ui ) {
+		    if (ui.item==null)
+	        {
+		        $("#petition_target").val('');
+		        $("#petition_target").focus();
+		        $("#petition_target_id").val('');
+	        }            
+            $( "#petition_target" ).val( ui.item.label );
+            $("#petition_target_id").val(ui.item.value);
+            return false;
+    	},
+    	change: function(event,ui)
+    	{
+		    if (ui.item==null)
+		        {
+		        $("#petition_target").val('');
+		        $("#petition_target").focus();
+		        $("#petition_target_id").val('');
+		        }
+		    }
       } );
 	
 });
