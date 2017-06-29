@@ -4,12 +4,13 @@ include 'includes/header.php';
 
 if(isset($config['organisation_id'])){
 	$organisationId= (int) $config['organisation_id'];
-	$data= ['per_page'=>'20','page'=>'1'];
+	$data['per_page']=isset($_GET['per_page'])?$_GET['per_page']:'20';
+	$data['page']=isset($_GET['page'])?$_GET['page']:'1';
 	try{
 		$response = $api->get("users/me/petitions",$data);
-		
+
 	} catch(CloudWelder\PetitionsApi\Exceptions\RestException $e){
-		
+
 		$response = $e->getServerResponse();
 		$responseCode = $response->getStatusCode();
 		switch ($responseCode) {
@@ -43,7 +44,7 @@ if(isset($config['organisation_id'])){
 		exit;
 	}
 	$petitionsList = $response->getResponseData();
-	}else {
+}else {
 
 	header("Location : index.php");
 }
@@ -94,8 +95,8 @@ ob_end_flush();
 	                  </div>
 	                  <div class="col col-xs-8">
 	                    <ul class="pagination visible pull-right">
-	                        <li><a href="<?php echo $petitionsList['prev_page_url']; ?>">«</a></li>
-	                        <li><a href="<?php echo $petitionsList['next_page_url']; ?>">»</a></li>
+	                        <li><a href="<?php echo str_replace("http://api.petitions.io/api/users/me/petitions",$_SERVER['REQUEST_URI'],$petitionsList['prev_page_url']); ?>">«</a></li>
+	                        <li><a href="<?php echo str_replace("http://api.petitions.io/api/users/me/petitions",$_SERVER['REQUEST_URI'],$petitionsList['next_page_url']); ?>">»</a></li>
 	                    </ul>
 	                  </div>
 	                </div>

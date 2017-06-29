@@ -4,13 +4,14 @@ ob_start ();
 include 'includes/header.php';
 
 if (isset ( $_POST ['submit'] )) {
-	
+
 	$data ['title'] = isset ( $_POST ['title'] ) ? $_POST ['title'] : null;
 	$data ['description'] = isset ( $_POST ['description'] ) ? $_POST ['description'] : null;
 	$data ['mission'] = isset ( $_POST ['mission'] ) ? $_POST ['mission'] : null;
 	$data ['goal'] = isset ( $_POST ['goal'] ) ? $_POST ['goal'] : null;
 	$data ['video_url'] = isset ( $_POST ['video_url'] ) ? $_POST ['video_url'] : null;
 	$data ['image_url'] = isset ( $_POST ['image_url'] ) ? $_POST ['image_url'] : null;
+	$data ['image_media_id'] = isset ( $_POST ['image_media_id'] ) ? $_POST ['image_media_id'] : null;
 	$data_targets = array ();
 	$data_targets [] = isset ( $_POST ['petition_target_id'] ) ? $_POST ['petition_target_id'] : null;
 	try {
@@ -21,7 +22,7 @@ if (isset ( $_POST ['submit'] )) {
 		$messages = '{' . $messageArray ['1'];
 		$error = json_decode ( $messages );
 		$_SESSION ['form'] ['error'] = true;
-		
+
 		foreach ( $error as $errorMessage ) {
 			if (is_array ( $errorMessage )) {
 				$_SESSION ['form'] ['message'] = $_SESSION ['form'] ['message'] . $errorMessage [0];
@@ -32,11 +33,11 @@ if (isset ( $_POST ['submit'] )) {
 		header ( "Location: create_petition.php" );
 		exit ();
 	}
-	
+
 	$petition = $response->getResponseData ();
 	$_SESSION ['form'] ['success'] = true;
 	$_SESSION ['form'] ['message'] = "petition created ";
-	
+
 	if (isset ( $petition ['id'] )) {
 		$data ['targets'] = $data_targets;
 		$petitionId = $petition ['id'];
@@ -48,7 +49,7 @@ if (isset ( $_POST ['submit'] )) {
 			$messages = '{' . $messageArray ['1'];
 			$error = json_decode ( $messages );
 			$_SESSION ['form'] ['error'] = true;
-			
+				
 			foreach ( $error as $errorMessage ) {
 				$_SESSION ['form'] ['message'] = $_SESSION ['form'] ['message'] . $errorMessage [0];
 			}
@@ -56,7 +57,7 @@ if (isset ( $_POST ['submit'] )) {
 			exit ();
 		}
 		$target = $response->getResponseData ();
-		
+
 		$_SESSION ['form'] ['success'] = true;
 		$_SESSION ['form'] ['message'] = $_SESSION ['form'] ['message'] . " Target Added ";
 	}
@@ -81,6 +82,11 @@ ob_end_flush ();
 						<div class="col col-xs-6">
 							<h3 class="panel-title">Create Petition</h3>
 						</div>
+						<div class="col col-xs-6 text-right">
+							<a href="create_target.php"
+								class="btn btn-sm btn-primary btn-create" role="button">Create
+								New Target</a>
+						</div>
 					</div>
 				</div>
 
@@ -104,7 +110,9 @@ ob_end_flush ();
 							<div class="form-group">
 								<label class="col-md-4 control-label" for="description">Description</label>
 								<div class="col-md-4">
-									<textarea id="description" name="description" class="form-control input-md"></textarea>
+									<textarea rows="4" cols="50" id="description"
+										name="description" class="form-control input-md" type="">
+										</textarea>
 
 								</div>
 							</div>
@@ -152,6 +160,17 @@ ob_end_flush ();
 								</div>
 							</div>
 
+							<!-- Text input-->
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="image_media_id">Internal
+									id of the media image object.</label>
+								<div class="col-md-4">
+									<input id="image_media_id" name="image_media_id"
+										placeholder="image_media_id" class="form-control input-md"
+										type="text">
+
+								</div>
+							</div>
 							<!-- Button -->
 
 							<input type="button" name="petition"
@@ -172,14 +191,12 @@ ob_end_flush ();
 							</div>
 							<input name="petition_target_id" type="hidden"
 								id="petition_target_id"> <input type="button" name="previous"
-								class="previous btn btn-default " value="Previous" /> <input
-								type="submit" name="submit" class="submit btn btn-success "
-								value="Submit" id="submit_data" />
+								class="previous btn btn-default " value="Previous" />
 							<div class="col col-xs-6 text-right pull-right">
-								<a href="javascript:void(0);"
-									class="btn btn-sm btn-primary btn-create" data-toggle="modal" data-target="#myModal" role="button">Create
-									New Target</a>
+								<input type="submit" name="submit"
+									class="submit btn btn-success " value="Submit" id="submit_data" />
 							</div>
+
 						</fieldset>
 					</form>
 
@@ -191,143 +208,4 @@ ob_end_flush ();
 		</div>
 	</div>
 </div>
-
-<!-- Trigger the modal with a button -->
-
-<!-- Modal -->
-<div id="myModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Create Target</h4>
-      </div>
-      <div class="modal-body">
-      
-     
-	              <div class="panel-body">
-						<form class="form-horizontal" name='create_target_form' id="create_target_form" action="save_target.php" method="post">
-						<fieldset>
-						
-						<!-- Form Name -->						
-						<!-- Select Basic -->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="name">Name of the Target</label>
-						  <div class="col-md-4">
-						  <input id="name" name="name" placeholder="name" class="form-control input-md" required="" type="text">
-						  </div>
-						</div>
-						
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="title">Title</label>  
-						  <div class="col-md-4">
-						  <input id="title" name="title" placeholder="title" class="form-control input-md" required=""  type="text">
-						    
-						  </div>
-						</div>
-						
-						<!-- Select Basic -->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="type">Type of Target</label>
-						  <div class="col-md-4">
-						    <select id="type" name="type" class="form-control">
-						      <option value="">Select Type</option>
-						      <option value="government">government</option>
-						      <option value="organization">organization</option>
-						      <option value="company">company</option>
-						      <option value="other">other</option>
-						    </select>
-						  </div>
-						</div>
-												
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="country_code">country code</label>  
-						  <div class="col-md-4">
-						  <input id="country_code" name="country_code" placeholder="country code" class="form-control input-md" required=""  type="text">
-						    
-						  </div>
-						</div>
-						
-						
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="state">State</label>  
-						  <div class="col-md-4">
-						  <input id="state" name="state" placeholder="state" class="form-control input-md"  type="text">
-						    
-						  </div>
-						</div>
-						
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="city">City</label>  
-						  <div class="col-md-4">
-						  <input id="city" name="city" placeholder="image city" class="form-control input-md"  type="text">
-						    
-						  </div>
-						</div>
-						
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="avatar_url">avatar url.</label>  
-						  <div class="col-md-4">
-						  <input id="avatar_url" name="avatar_url" placeholder="avatar_url" class="form-control input-md"  type="text">
-						    
-						  </div>
-						</div>
-						
-						<!-- Text input-->
-						<div class="form-group">
-						  <label class="col-md-4 control-label" for="avatar_media_id">avatar_media_id</label>  
-						  <div class="col-md-4">
-						  <input id="avatar_media_id" name="avatar_media_id" placeholder="avatar_media_id" class="form-control input-md"  type="text">
-						    
-						  </div>
-						</div>												
-						</fieldset>
-						</form>
-	              </div>
-      </div>
-      <div class="modal-footer">
-      <button id="submit-target" name="submit-target" class="btn btn-primary">Submit</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-
-  </div>
-</div>
 <?php include 'includes/footer.php';?>
-<script type="text/javascript">
-$(document).ready(function(){
-	$("#submit-target").on('click', function() {
-		$("#create_target_form").submit();
-    });
-
-	$("#create_target_form").on("submit", function(e) {
-        var postData = $(this).serializeArray();
-        var formURL = $(this).attr("action");
-        $.ajax({
-            url: formURL,
-            type: "POST",
-            data: postData,
-            success: function(data, textStatus, jqXHR) {
-                if(data=='Success'){
-                    alert('Target Created');
-                    $('#myModal').modal('hide');
-                }else {
-					alert(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-                console.log(status + ": " + error);
-            }
-        });
-        e.preventDefault();
-    });
-	
-});
-</script>
